@@ -5,7 +5,7 @@
 ################################################################################
 # Prepares taxonomic-guild mappings from complete UniProt fungi proteomes
 #
-# See docs/changelog.md for version history.
+# See docs/changelog_data_preanalysis.md for version history.
 #
 # This script:
 # 1. Downloads FunGuild database (timestamped, cached for 14 days)
@@ -296,6 +296,7 @@ check_existing_tabular <- function(dat_file) {
 }
 
 #' Single-pass streaming converter: .dat -> TSV with one row per entry
+#' Includes protein sequences for downstream prion domain analysis
 #' @param dat_file Path to UniProt .dat or .dat.gz file
 #' @return Path to created TSV file
 convert_uniprot_to_tabular <- function(dat_file) {
@@ -314,6 +315,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
 
   cat(sprintf(" ↳ Creating: %s\n", basename(tabular_file)))
   cat(" ↳ Single-pass streaming conversion (this may take a while for large files)...\n")
+  cat(" ↳ Includes protein sequences for prion domain analysis\n")
 
   start_time <- Sys.time()
 
@@ -339,12 +341,15 @@ convert_uniprot_to_tabular <- function(dat_file) {
   ID_vec <- character(estimated_entries)
   OS_vec <- character(estimated_entries)
   OC_vec <- character(estimated_entries)
+  SEQ_vec <- character(estimated_entries)
   entry_idx <- 1L
 
   # Current entry accumulators
   current_id <- ""
   current_os <- ""
   current_oc <- ""
+  current_seq <- ""
+  in_sequence <- FALSE
 
   # Progress tracking
   lines_read <- 0L
@@ -385,6 +390,15 @@ convert_uniprot_to_tabular <- function(dat_file) {
         current_oc <- paste0(current_oc, "; ", oc_part)
       }
 
+    } else if (startsWith(line, "SQ ")) {
+      # Start of sequence section
+      in_sequence <- TRUE
+
+    } else if (in_sequence && grepl("^\\s+[A-Z\\s]+$", line)) {
+      # Sequence line (spaces + uppercase letters only)
+      seq_part <- gsub("\\s", "", line)
+      current_seq <- paste0(current_seq, seq_part)
+
     } else if (startsWith(line, "//")) {
       # End of entry - save if we have data
       if (current_id != "") {
@@ -394,11 +408,13 @@ convert_uniprot_to_tabular <- function(dat_file) {
           ID_vec <- c(ID_vec, character(new_size - length(ID_vec)))
           OS_vec <- c(OS_vec, character(new_size - length(OS_vec)))
           OC_vec <- c(OC_vec, character(new_size - length(OC_vec)))
+          SEQ_vec <- c(SEQ_vec, character(new_size - length(SEQ_vec)))
         }
 
         ID_vec[entry_idx] <- current_id
         OS_vec[entry_idx] <- current_os
         OC_vec[entry_idx] <- current_oc
+        SEQ_vec[entry_idx] <- current_seq
         entry_idx <- entry_idx + 1L
       }
 
@@ -406,6 +422,8 @@ convert_uniprot_to_tabular <- function(dat_file) {
       current_id <- ""
       current_os <- ""
       current_oc <- ""
+      current_seq <- ""
+      in_sequence <- FALSE
     }
   }
 
@@ -416,12 +434,14 @@ convert_uniprot_to_tabular <- function(dat_file) {
   ID_vec <- ID_vec[1:actual_entries]
   OS_vec <- OS_vec[1:actual_entries]
   OC_vec <- OC_vec[1:actual_entries]
+  SEQ_vec <- SEQ_vec[1:actual_entries]
 
   # Create data frame
   tabular_data <- data.frame(
     Protein_ID = ID_vec,
     Organism = OS_vec,
     Full_Taxonomy = OC_vec,
+    Sequence = SEQ_vec,
     stringsAsFactors = FALSE
   )
 
@@ -1017,7 +1037,7 @@ main <- function() {
   cat("FUNGUILD PRE-ANALYSIS PIPELINE (v1.0)\n")
   cat("================================================================================\n")
   cat("Prepares genus-guild mapping from complete UniProt fungi database\n")
-  cat("See docs/changelog.md for version history and features.\n")
+  cat("See docs/changelog_data_preanalysis.md for version history.\n")
   cat("================================================================================\n")
 
   # Parse command-line arguments
@@ -1041,7 +1061,7 @@ main <- function() {
       cat("  Rscript R/data_preanalysis.R --db sprot\n")
       cat("  Rscript R/data_preanalysis.R --db trembl\n")
       cat("  Rscript R/data_preanalysis.R --db 1\n\n")
-      cat("See docs/changelog.md for features and version history.\n\n")
+      cat("See docs/changelog_data_preanalysis.md for version history.\n\n")
       return(invisible())
     }
   }

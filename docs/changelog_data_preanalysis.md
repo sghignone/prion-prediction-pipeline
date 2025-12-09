@@ -1,4 +1,4 @@
-# Changelog
+# Changelog - Data Pre-Analysis
 
 All notable changes to the FunGuild Pre-Analysis Pipeline are documented in this file.
 
@@ -11,6 +11,13 @@ New 3-tier data organization:
 - `data/raw/` - User-provided input files (.dat, .dat.gz)
 - `data/cache/` - Intermediate/cached files (converted TSV, FunGuild DB)
 - `data/processed/` - Final outputs for downstream scripts (taxonomy, guild mapping)
+
+### Tabular Cache
+The cached TSV now includes protein sequences for downstream analysis:
+- `Protein_ID` - UniProt accession
+- `Organism` - Full organism name from OS line
+- `Full_Taxonomy` - Complete OC taxonomy string
+- `Sequence` - Full amino acid sequence
 
 ### Features
 - Single-pass .dat to TSV conversion (eliminates redundant file reads)
