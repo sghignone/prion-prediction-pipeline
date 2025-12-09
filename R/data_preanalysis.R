@@ -296,7 +296,7 @@ check_existing_tabular <- function(dat_file) {
 }
 
 #' Single-pass streaming converter: .dat -> TSV with one row per entry
-#' Includes protein sequences for downstream prion domain analysis
+#' Includes protein sequences for downstream  analysis
 #' @param dat_file Path to UniProt .dat or .dat.gz file
 #' @return Path to created TSV file
 convert_uniprot_to_tabular <- function(dat_file) {
@@ -315,7 +315,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
 
   cat(sprintf(" ↳ Creating: %s\n", basename(tabular_file)))
   cat(" ↳ Single-pass streaming conversion (this may take a while for large files)...\n")
-  cat(" ↳ Includes protein sequences for prion domain analysis\n")
+  cat(" ↳ Includes protein sequences for downstream analyses\n")
 
   start_time <- Sys.time()
 
@@ -394,10 +394,14 @@ convert_uniprot_to_tabular <- function(dat_file) {
       # Start of sequence section
       in_sequence <- TRUE
 
-    } else if (in_sequence && grepl("^\\s+[A-Z\\s]+$", line)) {
-      # Sequence line (spaces + uppercase letters only)
-      seq_part <- gsub("\\s", "", line)
-      current_seq <- paste0(current_seq, seq_part)
+    } else if (in_sequence && !startsWith(line, "//") && !startsWith(line, "ID ") && 
+               grepl("[A-Z]", line)) {
+      # Sequence line: any line with uppercase letters (while in sequence section)
+      # Stops when we hit "//" or start of next entry
+      seq_part <- gsub("[^A-Z]", "", line)
+      if (seq_part != "") {
+        current_seq <- paste0(current_seq, seq_part)
+      }
 
     } else if (startsWith(line, "//")) {
       # End of entry - save if we have data
