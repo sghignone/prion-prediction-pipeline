@@ -53,9 +53,9 @@ po/*~
 rsconnect/
 
 # Large data files
-data/*.dat
-data/*.dat.gz
-data/*.rds
+data/raw/*.dat
+data/raw/*.dat.gz
+data/raw/*.rds
 
 # Output files (optional - you may want to track some)
 reports/*.png
