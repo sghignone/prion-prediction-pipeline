@@ -2,9 +2,15 @@
 
 All notable changes to the FunGuild Pre-Analysis Pipeline are documented in this file.
 
-## [v1.0] - 2024
+## [v1.0] - 2025
 
 Complete rewrite with optimized architecture. Reset version numbering for new directory layout.
+
+### Directory Structure
+New 3-tier data organization:
+- `data/raw/` - User-provided input files (.dat, .dat.gz)
+- `data/cache/` - Intermediate/cached files (converted TSV, FunGuild DB)
+- `data/processed/` - Final outputs for downstream scripts (taxonomy, guild mapping)
 
 ### Features
 - Single-pass .dat to TSV conversion (eliminates redundant file reads)

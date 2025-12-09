@@ -27,8 +27,13 @@ suppressPackageStartupMessages({
 # CONFIGURATION
 ################################################################################
 
-# Directory structure
-DATA_DIR <- "data"
+# Directory structure (3-tier)
+# data/raw/       - User-provided input files (.dat, .dat.gz)
+# data/cache/     - Intermediate/cached files (converted TSV, FunGuild DB)
+# data/processed/ - Final outputs for downstream scripts (taxonomy, guild mapping)
+DATA_RAW_DIR <- "data/raw"
+DATA_CACHE_DIR <- "data/cache"
+DATA_PROCESSED_DIR <- "data/processed"
 REPORTS_DIR <- "reports"
 
 # Database URLs
@@ -118,18 +123,15 @@ safe_funguild_query <- function(genus, funguild_db) {
 create_directories <- function() {
   cat("\n=== Step 0: Creating Directory Structure ===\n")
 
-  if (!dir.exists(DATA_DIR)) {
-    dir.create(DATA_DIR, recursive = TRUE)
-    cat(sprintf(" ↳ Created directory: %s\n", DATA_DIR))
-  } else {
-    cat(sprintf(" ↳ Directory exists: %s\n", DATA_DIR))
-  }
+  dirs <- c(DATA_RAW_DIR, DATA_CACHE_DIR, DATA_PROCESSED_DIR, REPORTS_DIR)
 
-  if (!dir.exists(REPORTS_DIR)) {
-    dir.create(REPORTS_DIR, recursive = TRUE)
-    cat(sprintf(" ↳ Created directory: %s\n", REPORTS_DIR))
-  } else {
-    cat(sprintf(" ↳ Directory exists: %s\n", REPORTS_DIR))
+  for (d in dirs) {
+    if (!dir.exists(d)) {
+      dir.create(d, recursive = TRUE)
+      cat(sprintf(" ↳ Created directory: %s\n", d))
+    } else {
+      cat(sprintf(" ↳ Directory exists: %s\n", d))
+    }
   }
 }
 
@@ -138,7 +140,7 @@ create_directories <- function() {
 ################################################################################
 
 check_existing_funguild_db <- function() {
-  existing_dbs <- list.files(DATA_DIR,
+  existing_dbs <- list.files(DATA_CACHE_DIR,
                              pattern = "^funguild_db_\\d{8}_\\d{6}\\.rds$",
                              full.names = TRUE)
 
@@ -201,7 +203,7 @@ download_funguild_db <- function() {
 
     cat(sprintf(" ↳ Downloaded database with %d records\n", nrow(funguild_db)))
 
-    new_file <- file.path(DATA_DIR, paste0("funguild_db_", timestamp, ".rds"))
+    new_file <- file.path(DATA_CACHE_DIR, paste0("funguild_db_", timestamp, ".rds"))
 
     return(list(db = funguild_db, file = new_file, is_new = TRUE))
 
@@ -218,7 +220,7 @@ find_uniprot_databases <- function() {
   cat("\n=== Step 2: Locating UniProt Fungi Databases ===\n")
 
   existing_files <- list.files(
-    DATA_DIR,
+    DATA_RAW_DIR,
     pattern = "^uniprot_(sprot|trembl)_fungi\\.dat(\\.gz)?$",
     full.names = TRUE,
     ignore.case = FALSE
@@ -254,7 +256,7 @@ check_existing_tabular <- function(dat_file) {
 
   # Look for existing tabular files (same db type)
   existing_tabular <- list.files(
-    DATA_DIR,
+    DATA_CACHE_DIR,
     pattern = paste0("^", db_name, "_fungi_tabular_\\d{8}_\\d{6}\\.tsv$"),
     full.names = TRUE
   )
@@ -308,7 +310,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
     "uniprot"
   }
 
-  tabular_file <- file.path(DATA_DIR, paste0(db_name, "_fungi_tabular_", timestamp, ".tsv"))
+  tabular_file <- file.path(DATA_CACHE_DIR, paste0(db_name, "_fungi_tabular_", timestamp, ".tsv"))
 
   cat(sprintf(" ↳ Creating: %s\n", basename(tabular_file)))
   cat(" ↳ Single-pass streaming conversion (this may take a while for large files)...\n")
@@ -446,8 +448,8 @@ select_or_download_uniprot <- function(db_choice = NULL) {
 
   if (length(existing_files) == 0) {
     stop(paste(
-      "\nError: No UniProt fungi databases found in data/ directory.",
-      "\nPlease download one of the following and place in data/:",
+      "\nError: No UniProt fungi databases found in data/raw/ directory.",
+      "\nPlease download one of the following and place in data/raw/:",
       "\n  - uniprot_sprot_fungi.dat or .dat.gz (Swiss-Prot, ~0.06 GB)",
       "\n  - uniprot_trembl_fungi.dat or .dat.gz (TrEMBL, ~72 GB)",
       "\nDownload from:",
@@ -590,7 +592,7 @@ extract_taxonomy_from_tabular <- function(tabular_file) {
     "uniprot"
   }
 
-  taxonomy_file <- file.path(DATA_DIR, paste0(db_name, "_fungi_taxonomy_", timestamp, ".tsv"))
+  taxonomy_file <- file.path(DATA_PROCESSED_DIR, paste0(db_name, "_fungi_taxonomy_", timestamp, ".tsv"))
 
   cat(" ↳ Parsing organism names (vectorized)...\n")
   parse_start <- Sys.time()
@@ -649,7 +651,7 @@ query_funguild_for_genera <- function(taxonomy_result, funguild_db) {
   taxonomy_data <- taxonomy_result$data
   db_name <- taxonomy_result$db_name
 
-  guild_mapping_file <- file.path(DATA_DIR,
+  guild_mapping_file <- file.path(DATA_PROCESSED_DIR,
                                   paste0(db_name, "_genus_guild_mapping_", timestamp, ".tsv"))
 
   # Get unique genera (excluding NA)
@@ -857,7 +859,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   cat("\n")
 
   cat("--- OUTPUT FILES ---\n")
-  cat(sprintf("FunGuild DB: %s\n", file.path(DATA_DIR, paste0("funguild_db_", timestamp, ".rds"))))
+  cat(sprintf("FunGuild DB: %s\n", file.path(DATA_CACHE_DIR, paste0("funguild_db_", timestamp, ".rds"))))
   cat(sprintf("Taxonomy: %s\n", taxonomy_result$taxonomy_file))
   cat(sprintf("Guild mapping: %s\n", guild_results$guild_mapping_file))
   cat(sprintf("Unmatched genera: %s\n", unmatched_log_file))

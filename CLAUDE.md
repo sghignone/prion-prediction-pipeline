@@ -16,9 +16,18 @@
 
 ## Input Data
 
-Place UniProt fungi proteome files in `data/`:
+Place UniProt fungi proteome files in `data/raw/`:
 - `uniprot_sprot_fungi.dat` or `.dat.gz` (Swiss-Prot, ~50MB)
 - `uniprot_trembl_fungi.dat` or `.dat.gz` (TrEMBL, ~73GB)
 
 Download from: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/taxonomic_divisions/
+
+## Directory Structure
+
+```
+data/
+├── raw/          # User-provided input files
+├── cache/        # Intermediate/cached files
+└── processed/    # Final outputs for downstream scripts
+```
 
