@@ -1,36 +1,11 @@
 #!/usr/bin/env Rscript
 
 ################################################################################
-# FunGuild Pre-Analysis Pipeline for UniProt Fungi Database (v41.3)
+# FunGuild Pre-Analysis Pipeline for UniProt Fungi Database (v1.0)
 ################################################################################
 # Prepares taxonomic-guild mappings from complete UniProt fungi proteomes
 #
-# v41.3 Changes (from v41.2):
-# - IMPROVED: Organism name cleaning now handles:
-#   - Square brackets: [Bisifusarium] -> Bisifusarium
-#   - Single quotes: 'Aporospora -> Aporospora
-# - Better genus/species extraction for edge cases in UniProt naming
-#
-# v41.2 Changes (from v41.1):
-# - NEW: Unmatched genera log - generates TSV of genera without FunGuild data
-# - NEW: Diagnostic report includes top unmatched genera by protein count
-# - Helps identify coverage gaps for future database improvements
-#
-# v41.1 Changes (from v41):
-# - STANDALONE: Removed references to external workflows/pipelines
-# - Self-contained taxonomic and ecological guild analysis tool
-#
-# v41 Changes (from v40.3):
-# - NEW: Step 2.5 - Single-pass .dat to TSV conversion (eliminates redundant reads)
-# - NEW: Tabular caching - reuses converted TSV files (14-day validity)
-# - NEW: Ultra-fast Step 3 - vectorized parsing of TSV (no parallel overhead)
-# - REMOVED: Parallel file reading (replaced with single-pass approach)
-# - SPEED: Expected 4-5x faster on first run, 15-25x on subsequent runs
-#
-# Previous features retained:
-# - Extract full OC taxonomy string for each entry
-# - FunGuild database caching (14-day validity)
-# - Windows and Linux compatible
+# See docs/changelog.md for version history.
 #
 # This script:
 # 1. Downloads FunGuild database (timestamped, cached for 14 days)
@@ -262,7 +237,7 @@ find_uniprot_databases <- function() {
 }
 
 ################################################################################
-# STEP 2.5: CONVERT UNIPROT .dat TO TABULAR FORMAT (NEW IN v41)
+# STEP 2.5: CONVERT UNIPROT .dat TO TABULAR FORMAT
 ################################################################################
 
 #' Check for existing tabular conversion
@@ -534,9 +509,9 @@ select_or_download_uniprot <- function(db_choice = NULL) {
         stop(paste(
           "\nError: Multiple databases found but no --db argument provided.",
           "\nWhen using Rscript with multiple databases, specify which to use:",
-          "\n  Rscript funguild_preanalysis_v41.3.R --db sprot",
-          "\n  Rscript funguild_preanalysis_v41.3.R --db trembl",
-          "\n  Rscript funguild_preanalysis_v41.3.R --db 1",
+          "\n  Rscript R/data_preanalysis.R --db sprot",
+          "\n  Rscript R/data_preanalysis.R --db trembl",
+          "\n  Rscript R/data_preanalysis.R --db 1",
           "\nOr run interactively in R console/RStudio to select.",
           sep = ""
         ))
@@ -819,7 +794,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   sink(report_file)
 
   cat("================================================================================\n")
-  cat("FUNGUILD PRE-ANALYSIS DIAGNOSTIC REPORT (v41.3)\n")
+  cat("FUNGUILD PRE-ANALYSIS DIAGNOSTIC REPORT (v1.0)\n")
   cat("================================================================================\n")
   cat(sprintf("Generated: %s\n", Sys.time()))
   cat(sprintf("Database: %s\n", toupper(db_name)))
@@ -1006,7 +981,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   combined_plot <- (p1 | p2) / (p3 | p4 | p5) +
     plot_layout(heights = c(1, 1)) +
     plot_annotation(
-      title = sprintf("FunGuild Pre-Analysis: %s Database (v41.3)", toupper(db_name)),
+      title = sprintf("FunGuild Pre-Analysis: %s Database (v1.0)", toupper(db_name)),
       subtitle = sprintf("Generated: %s", Sys.time()),
       theme = theme(
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
@@ -1037,17 +1012,10 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
 main <- function() {
   cat("\n")
   cat("================================================================================\n")
-  cat("FUNGUILD PRE-ANALYSIS PIPELINE (v41.3 - IMPROVED NAME CLEANING)\n")
+  cat("FUNGUILD PRE-ANALYSIS PIPELINE (v1.0)\n")
   cat("================================================================================\n")
   cat("Prepares genus-guild mapping from complete UniProt fungi database\n")
-  cat("\n")
-  cat("Features:\n")
-  cat("  - Single-pass .dat to TSV conversion (Step 2.5)\n")
-  cat("  - Tabular caching for fast re-runs (14-day validity)\n")
-  cat("  - Ultra-fast vectorized parsing (no parallel overhead)\n")
-  cat("  - Improved organism name cleaning (v41.3): handles [brackets] and 'quotes\n")
-  cat("  - Unmatched genera log for diagnostic purposes\n")
-  cat("  - Expected 4-5x faster first run, 15-25x faster re-runs\n")
+  cat("See docs/changelog.md for version history and features.\n")
   cat("================================================================================\n")
 
   # Parse command-line arguments
@@ -1063,21 +1031,15 @@ main <- function() {
       }
     } else if (args[1] %in% c("--help", "-h")) {
       cat("\nUsage:\n")
-      cat("  Rscript funguild_preanalysis_v41.3.R [options]\n\n")
+      cat("  Rscript R/data_preanalysis.R [options]\n\n")
       cat("Options:\n")
       cat("  --db, -d <choice>    Select database: 'sprot', 'trembl', or number\n")
       cat("  --help, -h           Show this help message\n\n")
       cat("Examples:\n")
-      cat("  Rscript funguild_preanalysis_v41.3.R --db sprot\n")
-      cat("  Rscript funguild_preanalysis_v41.3.R --db trembl\n")
-      cat("  Rscript funguild_preanalysis_v41.3.R --db 1\n\n")
-      cat("Features:\n")
-      cat("  - Single-pass .dat -> TSV conversion (eliminates redundant file reads)\n")
-      cat("  - Tabular file caching (re-use for 14 days)\n")
-      cat("  - Ultra-fast vectorized parsing (replaces parallel processing)\n")
-      cat("  - Improved name cleaning: [Bisifusarium] -> Bisifusarium, 'Aporospora -> Aporospora\n")
-      cat("  - Unmatched genera log with protein counts\n")
-      cat("  - Simpler codebase (no parallel cluster management)\n\n")
+      cat("  Rscript R/data_preanalysis.R --db sprot\n")
+      cat("  Rscript R/data_preanalysis.R --db trembl\n")
+      cat("  Rscript R/data_preanalysis.R --db 1\n\n")
+      cat("See docs/changelog.md for features and version history.\n\n")
       return(invisible())
     }
   }
