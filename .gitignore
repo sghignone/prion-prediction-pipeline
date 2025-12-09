@@ -52,6 +52,9 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# Deprecated scripts (replaced by new versions)
+R/prion_parser_v13.0.R
+
 # Large data files
 data/raw/*.dat
 data/raw/*.dat.gz
@@ -62,5 +65,3 @@ reports/*.png
 reports/*.pdf
 reports/*.tsv
 
-# Miscellaneous
-R/prion_parser_v13.R

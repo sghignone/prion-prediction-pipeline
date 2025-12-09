@@ -2,6 +2,16 @@
 
 All notable changes to the FunGuild Pre-Analysis Pipeline are documented in this file.
 
+## [v1.0.1] - 2025
+
+### Bug Fixes
+- **FIXED**: Sequence extraction during .dat to TSV conversion
+  - Previous regex `^\\s+[A-Z\\s]+$` was too strict and missed some sequence lines
+  - New approach uses robust check for any line containing uppercase letters while in sequence section
+  - Extracts only amino acid characters with `gsub("[^A-Z]", "", line)`
+
+---
+
 ## [v1.0] - 2025
 
 Complete rewrite with optimized architecture. Reset version numbering for new directory layout.

@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ################################################################################
-# FunGuild Pre-Analysis Pipeline for UniProt Fungi Database (v1.0)
+# FunGuild Pre-Analysis Pipeline for UniProt Fungi Database (v1.0.1)
 ################################################################################
 # Prepares taxonomic-guild mappings from complete UniProt fungi proteomes
 #
@@ -820,7 +820,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   sink(report_file)
 
   cat("================================================================================\n")
-  cat("FUNGUILD PRE-ANALYSIS DIAGNOSTIC REPORT (v1.0)\n")
+  cat("FUNGUILD PRE-ANALYSIS DIAGNOSTIC REPORT (v1.0.1)\n")
   cat("================================================================================\n")
   cat(sprintf("Generated: %s\n", Sys.time()))
   cat(sprintf("Database: %s\n", toupper(db_name)))
@@ -1007,7 +1007,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   combined_plot <- (p1 | p2) / (p3 | p4 | p5) +
     plot_layout(heights = c(1, 1)) +
     plot_annotation(
-      title = sprintf("FunGuild Pre-Analysis: %s Database (v1.0)", toupper(db_name)),
+      title = sprintf("FunGuild Pre-Analysis: %s Database (v1.0.1)", toupper(db_name)),
       subtitle = sprintf("Generated: %s", Sys.time()),
       theme = theme(
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
@@ -1038,7 +1038,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
 main <- function() {
   cat("\n")
   cat("================================================================================\n")
-  cat("FUNGUILD PRE-ANALYSIS PIPELINE (v1.0)\n")
+  cat("FUNGUILD PRE-ANALYSIS PIPELINE (v1.0.1)\n")
   cat("================================================================================\n")
   cat("Prepares genus-guild mapping from complete UniProt fungi database\n")
   cat("See docs/changelog_data_preanalysis.md for version history.\n")
