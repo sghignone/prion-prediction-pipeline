@@ -62,4 +62,5 @@ reports/*.png
 reports/*.pdf
 reports/*.tsv
 
-
+# Miscellaneous
+R/prion_parser_v13.R
