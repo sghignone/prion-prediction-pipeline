@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ################################################################################
-# FunGuild Pre-Analysis Pipeline for UniProt Fungi Database (v1.0.1)
+# FunGuild Pre-Analysis Pipeline for UniProt Fungi Database (v1.0.2)
 ################################################################################
 # Prepares taxonomic-guild mappings from complete UniProt fungi proteomes
 #
@@ -341,6 +341,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
   ID_vec <- character(estimated_entries)
   OS_vec <- character(estimated_entries)
   OC_vec <- character(estimated_entries)
+  OX_vec <- character(estimated_entries)
   SEQ_vec <- character(estimated_entries)
   entry_idx <- 1L
 
@@ -348,6 +349,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
   current_id <- ""
   current_os <- ""
   current_oc <- ""
+  current_ox <- ""
   current_seq <- ""
   in_sequence <- FALSE
 
@@ -390,6 +392,13 @@ convert_uniprot_to_tabular <- function(dat_file) {
         current_oc <- paste0(current_oc, "; ", oc_part)
       }
 
+    } else if (startsWith(line, "OX ")) {
+      # Extract NCBI TaxID (format: "OX   NCBI_TaxID=12345 {evidence};"
+      ox_match <- regmatches(line, regexpr("NCBI_TaxID=(\\d+)", line))
+      if (length(ox_match) > 0) {
+        current_ox <- sub("NCBI_TaxID=", "", ox_match)
+      }
+
     } else if (startsWith(line, "SQ ")) {
       # Start of sequence section
       in_sequence <- TRUE
@@ -412,12 +421,14 @@ convert_uniprot_to_tabular <- function(dat_file) {
           ID_vec <- c(ID_vec, character(new_size - length(ID_vec)))
           OS_vec <- c(OS_vec, character(new_size - length(OS_vec)))
           OC_vec <- c(OC_vec, character(new_size - length(OC_vec)))
+          OX_vec <- c(OX_vec, character(new_size - length(OX_vec)))
           SEQ_vec <- c(SEQ_vec, character(new_size - length(SEQ_vec)))
         }
 
         ID_vec[entry_idx] <- current_id
         OS_vec[entry_idx] <- current_os
         OC_vec[entry_idx] <- current_oc
+        OX_vec[entry_idx] <- current_ox
         SEQ_vec[entry_idx] <- current_seq
         entry_idx <- entry_idx + 1L
       }
@@ -426,6 +437,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
       current_id <- ""
       current_os <- ""
       current_oc <- ""
+      current_ox <- ""
       current_seq <- ""
       in_sequence <- FALSE
     }
@@ -438,6 +450,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
   ID_vec <- ID_vec[1:actual_entries]
   OS_vec <- OS_vec[1:actual_entries]
   OC_vec <- OC_vec[1:actual_entries]
+  OX_vec <- OX_vec[1:actual_entries]
   SEQ_vec <- SEQ_vec[1:actual_entries]
 
   # Create data frame
@@ -445,6 +458,7 @@ convert_uniprot_to_tabular <- function(dat_file) {
     Protein_ID = ID_vec,
     Organism = OS_vec,
     Full_Taxonomy = OC_vec,
+    NCBI_TaxID = OX_vec,
     Sequence = SEQ_vec,
     stringsAsFactors = FALSE
   )
@@ -820,7 +834,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   sink(report_file)
 
   cat("================================================================================\n")
-  cat("FUNGUILD PRE-ANALYSIS DIAGNOSTIC REPORT (v1.0.1)\n")
+  cat("FUNGUILD PRE-ANALYSIS DIAGNOSTIC REPORT (v1.0.2)\n")
   cat("================================================================================\n")
   cat(sprintf("Generated: %s\n", Sys.time()))
   cat(sprintf("Database: %s\n", toupper(db_name)))
@@ -1007,7 +1021,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   combined_plot <- (p1 | p2) / (p3 | p4 | p5) +
     plot_layout(heights = c(1, 1)) +
     plot_annotation(
-      title = sprintf("FunGuild Pre-Analysis: %s Database (v1.0.1)", toupper(db_name)),
+      title = sprintf("FunGuild Pre-Analysis: %s Database (v1.0.2)", toupper(db_name)),
       subtitle = sprintf("Generated: %s", Sys.time()),
       theme = theme(
         plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
@@ -1038,7 +1052,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
 main <- function() {
   cat("\n")
   cat("================================================================================\n")
-  cat("FUNGUILD PRE-ANALYSIS PIPELINE (v1.0.1)\n")
+  cat("FUNGUILD PRE-ANALYSIS PIPELINE (v1.0.2)\n")
   cat("================================================================================\n")
   cat("Prepares genus-guild mapping from complete UniProt fungi database\n")
   cat("See docs/changelog_data_preanalysis.md for version history.\n")

@@ -2,6 +2,15 @@
 
 All notable changes to the FunGuild Pre-Analysis Pipeline are documented in this file.
 
+## [v1.0.2] - 2025
+
+### Features
+- **NEW**: NCBI_TaxID column added to tabular cache
+  - Extracts taxonomy ID from OX lines in UniProt .dat files
+  - Available for downstream prion parser and other analyses
+
+---
+
 ## [v1.0.1] - 2025
 
 ### Bug Fixes
@@ -23,10 +32,11 @@ New 3-tier data organization:
 - `data/processed/` - Final outputs for downstream scripts (taxonomy, guild mapping)
 
 ### Tabular Cache
-The cached TSV now includes protein sequences for downstream analysis:
+The cached TSV includes all data needed for downstream analysis:
 - `Protein_ID` - UniProt accession
 - `Organism` - Full organism name from OS line
 - `Full_Taxonomy` - Complete OC taxonomy string
+- `NCBI_TaxID` - NCBI Taxonomy ID from OX line
 - `Sequence` - Full amino acid sequence
 
 ### Features

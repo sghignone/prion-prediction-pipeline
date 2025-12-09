@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ################################################################################
-# Prion Domain Prediction Script (v1.0)
+# Prion Domain Prediction Script (v1.0.1)
 ################################################################################
 # Predicts prion domains in protein sequences using sliding window analysis
 #
@@ -158,11 +158,12 @@ calculate_window_score <- function(domain, aa_scores_prd, proline_logodd) {
 #' @param protein_id Protein identifier
 #' @param organism Organism name
 #' @param taxonomy Full taxonomy string
+#' @param taxid NCBI Taxonomy ID
 #' @param sequence Amino acid sequence
 #' @param window Sliding window size
 #' @param cutoff Score cutoff
 #' @return Prediction result or NULL
-analyze_protein <- function(protein_id, organism, taxonomy, sequence,
+analyze_protein <- function(protein_id, organism, taxonomy, taxid, sequence,
                             window, cutoff, aa_scores_prd, proline_logodd) {
   # Skip sequences shorter than window
   if (nchar(sequence) < window) return(NULL)
@@ -188,6 +189,7 @@ analyze_protein <- function(protein_id, organism, taxonomy, sequence,
       seq_id = protein_id,
       organism = org_clean,
       taxonomy = taxonomy,
+      taxid = taxid,
       score = best_result$Score,
       window = best_result$Window,
       domain = best_result$Seq
@@ -217,6 +219,7 @@ process_tabular_cache <- function(cache_file, num_cores) {
       Protein_ID = col_character(),
       Organism = col_character(),
       Full_Taxonomy = col_character(),
+      NCBI_TaxID = col_character(),
       Sequence = col_character()
     ),
     show_col_types = FALSE,
@@ -269,6 +272,7 @@ process_tabular_cache <- function(cache_file, num_cores) {
         protein_id = row$Protein_ID,
         organism = row$Organism,
         taxonomy = row$Full_Taxonomy,
+        taxid = row$NCBI_TaxID,
         sequence = row$Sequence,
         window = WINDOW,
         cutoff = CUTOFF,
@@ -373,6 +377,7 @@ stream_swissprot_file <- function(dat_file, num_cores) {
     current_id <- ""
     current_os <- ""
     current_oc <- ""
+    current_ox <- ""
     current_seq <- ""
     in_sequence <- FALSE
 
@@ -386,10 +391,15 @@ stream_swissprot_file <- function(dat_file, num_cores) {
         oc_part <- sub("^OC\\s+", "", line)
         oc_part <- sub(";$", "", oc_part)
         current_oc <- if (current_oc == "") oc_part else paste(current_oc, oc_part, sep = "; ")
+      } else if (startsWith(line, "OX ")) {
+        ox_match <- regmatches(line, regexpr("NCBI_TaxID=(\\d+)", line))
+        if (length(ox_match) > 0) {
+          current_ox <- sub("NCBI_TaxID=", "", ox_match)
+        }
       } else if (startsWith(line, "SQ ")) {
         in_sequence <- TRUE
-      } else if (in_sequence && grepl("^\\s+[A-Z\\s]+$", line)) {
-        current_seq <- paste0(current_seq, gsub("\\s", "", line))
+      } else if (in_sequence && !startsWith(line, "//") && grepl("[A-Z]", line)) {
+        current_seq <- paste0(current_seq, gsub("[^A-Z]", "", line))
       } else if (startsWith(line, "//")) {
         entry_num <- entry_num + 1
 
@@ -406,6 +416,7 @@ stream_swissprot_file <- function(dat_file, num_cores) {
               protein_id = current_id,
               organism = current_os,
               taxonomy = current_oc,
+              taxid = current_ox,
               sequence = current_seq,
               window = WINDOW,
               cutoff = CUTOFF,
@@ -427,6 +438,7 @@ stream_swissprot_file <- function(dat_file, num_cores) {
         current_id <- ""
         current_os <- ""
         current_oc <- ""
+        current_ox <- ""
         current_seq <- ""
         in_sequence <- FALSE
       }
@@ -498,6 +510,7 @@ write_outputs <- function(results, output_file, tabular_file, db_name) {
         Protein_ID = pred$seq_id,
         Organism = pred$organism,
         Taxonomy = pred$taxonomy,
+        NCBI_TaxID = ifelse(is.null(pred$taxid) || is.na(pred$taxid), "", pred$taxid),
         Window_Position = pred$window,
         Score = pred$score,
         Prion_Domain = pred$domain,
@@ -518,6 +531,7 @@ write_outputs <- function(results, output_file, tabular_file, db_name) {
         Protein_ID = character(),
         Organism = character(),
         Taxonomy = character(),
+        NCBI_TaxID = character(),
         Window_Position = integer(),
         Score = numeric(),
         Prion_Domain = character()

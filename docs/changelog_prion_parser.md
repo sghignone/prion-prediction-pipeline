@@ -2,6 +2,19 @@
 
 All notable changes to the Prion Domain Prediction script are documented in this file.
 
+## [v1.0.1] - 2025
+
+### Features
+- **NEW**: NCBI_TaxID included in prediction output
+  - Reads from tabular cache NCBI_TaxID column
+  - Included in tabular output format
+  - Streaming fallback also extracts OX lines from .dat files
+
+### Bug Fixes
+- **FIXED**: Sequence extraction in streaming fallback uses improved regex (matches data_preanalysis.R fix)
+
+---
+
 ## [v1.0] - 2025
 
 Complete rewrite leveraging cached tabular files from data_preanalysis.R. Reset version numbering.
