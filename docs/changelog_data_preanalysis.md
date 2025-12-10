@@ -7,7 +7,7 @@ All notable changes to the FunGuild Pre-Analysis Pipeline are documented in this
 ### Features
 - **NEW**: NCBI_TaxID column added to tabular cache
   - Extracts taxonomy ID from OX lines in UniProt .dat files
-  - Available for downstream prion parser and other analyses
+  - Available for downstream PrionScan and other analyses
 
 ---
 

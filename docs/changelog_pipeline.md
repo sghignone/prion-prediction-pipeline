@@ -2,6 +2,25 @@
 
 All notable changes to the Pipeline Orchestrator are documented in this file.
 
+## [v1.3] - 2025
+
+### PAPA Integration
+
+- **NEW**: Added PAPA (Prion Aggregation Prediction Algorithm) as pipeline step
+  - Registry entry: `PAPA`
+  - Script path: `R/PAPA.R`
+  - Output: `data/processed/{db}_papa_predictions_*.tsv`
+- **Updated**: Step order now includes PAPA after PrionScan
+- **Updated**: Mermaid diagrams show both PrionScan and PAPA in Step 2
+
+### Pipeline Steps (v1.3)
+
+1. **data_preanalysis**: Convert .dat to TSV, extract taxonomy, map FunGuild
+2. **PrionScan**: Predict prion domains (Espinosa Angarica algorithm)
+3. **PAPA**: Prion aggregation prediction (Toombs et al. algorithm)
+
+---
+
 ## [v1.2] - 2025
 
 ### Script Rename

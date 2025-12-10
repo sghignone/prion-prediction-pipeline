@@ -52,7 +52,7 @@
 | Tool      | Purpose                       | Key Features                                                         | Threshold Example                 | Completed |
 | --------- | ----------------------------- | -------------------------------------------------------------------- | --------------------------------- | --------- |
 | PrionScan | Probabilistic Q/N-rich PrLDs  | HMM-based on experimentally validated prions                         | Score > 0.2 (default)             | ✅        |
-| PAPA      | Aggregation-prone PrLDs       | Composition and aggregation propensity-based prediction              | Aggregation score > 0.05          |           |
+| PAPA      | Aggregation-prone PrLDs       | Composition and aggregation propensity-based prediction              | Aggregation score > 0.05          | ✅        |
 | PLAAC     | Log-likelihood Q/N PrLDs      | Statistical Q/N enrichment relative to background proteome           | Score > 20 (high-confidence hits) |           |
 | fLPS      | Low-complexity Q/N regions    | Identifies simple sequence repeats and Q/N-rich low complexity       | Default settings                  |           |
 | WALTZ     | Amyloid motif predictor       | Detects short amyloidogenic peptides independently of Q/N enrichment | Score ~0.5-0.6                    |           |
@@ -78,14 +78,16 @@ flowchart TD
         FGDB[("FunGuild DB<br/>data/cache/")]
     end
 
-    subgraph step2["Step 2: Prion Prediction"]
+    subgraph step2["Step 2: Prion Predictions"]
         S2[PrionScan.R]
+        S3[PAPA.R]
     end
 
     subgraph outputs["Processed Outputs"]
         TAX[("Taxonomy TSV<br/>data/processed/")]
         GUILD[("Guild Mapping<br/>data/processed/")]
-        PRION[("Prion Predictions<br/>data/processed/")]
+        PRION[("PrionScan Predictions<br/>data/processed/")]
+        PAPA_OUT[("PAPA Predictions<br/>data/processed/")]
     end
 
     DAT --> S1
@@ -94,5 +96,7 @@ flowchart TD
     S1 --> TAX
     S1 --> GUILD
     TSV --> S2
+    TSV --> S3
     S2 --> PRION
+    S3 --> PAPA_OUT
 ```

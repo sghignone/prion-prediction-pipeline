@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # =============================================================================
 # Pipeline Orchestrator for Prion Prediction Pipeline
-# Version: 1.2
+# Version: 1.3
 # =============================================================================
 #
 # Usage:
@@ -31,14 +31,16 @@
 #         FGDB[("FunGuild DB<br/>data/cache/")]
 #     end
 #
-#     subgraph step2["Step 2: Prion Prediction"]
+#     subgraph step2["Step 2: Prion Predictions"]
 #         S2[PrionScan.R]
+#         S3[PAPA.R]
 #     end
 #
 #     subgraph outputs["Processed Outputs"]
 #         TAX[("Taxonomy TSV<br/>data/processed/")]
 #         GUILD[("Guild Mapping<br/>data/processed/")]
-#         PRION[("Prion Predictions<br/>data/processed/")]
+#         PRION[("PrionScan Predictions<br/>data/processed/")]
+#         PAPA_OUT[("PAPA Predictions<br/>data/processed/")]
 #     end
 #
 #     DAT --> S1
@@ -47,7 +49,9 @@
 #     S1 --> TAX
 #     S1 --> GUILD
 #     TSV --> S2
+#     TSV --> S3
 #     S2 --> PRION
+#     S3 --> PAPA_OUT
 # ```
 #
 # =============================================================================
@@ -60,7 +64,7 @@ suppressPackageStartupMessages({
 # CONFIGURATION
 # =============================================================================
 
-SCRIPT_VERSION <- "1.2"
+SCRIPT_VERSION <- "1.3"
 
 # Directory structure
 DATA_RAW_DIR      <- "data/raw"
@@ -114,12 +118,25 @@ PIPELINE_STEPS <- list(
     ),
     depends_on = c("data_preanalysis"),
     args = function(db) c("--db", db)
+  ),
+
+  PAPA = list(
+    script = "R/PAPA.R",
+    description = "PAPA prion aggregation prediction",
+    inputs = list(
+      cache = "{DATA_CACHE_DIR}/{db_prefix}_fungi_tabular_*.tsv"
+    ),
+    outputs = list(
+      predictions = "{DATA_PROCESSED_DIR}/{db_prefix}_papa_predictions_*.tsv"
+    ),
+    depends_on = c("data_preanalysis"),
+    args = function(db) c("--db", db)
   )
 
 )
 
 # Step execution order
-STEP_ORDER <- c("data_preanalysis", "PrionScan")
+STEP_ORDER <- c("data_preanalysis", "PrionScan", "PAPA")
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -376,14 +393,16 @@ get_diagram_code <- function() {
         FGDB[("FunGuild DB<br/>data/cache/")]
     end
 
-    subgraph step2["Step 2: Prion Prediction"]
+    subgraph step2["Step 2: Prion Predictions"]
         S2[PrionScan.R]
+        S3[PAPA.R]
     end
 
     subgraph outputs["Processed Outputs"]
         TAX[("Taxonomy TSV<br/>data/processed/")]
         GUILD[("Guild Mapping<br/>data/processed/")]
-        PRION[("Prion Predictions<br/>data/processed/")]
+        PRION[("PrionScan Predictions<br/>data/processed/")]
+        PAPA_OUT[("PAPA Predictions<br/>data/processed/")]
     end
 
     DAT --> S1
@@ -392,7 +411,9 @@ get_diagram_code <- function() {
     S1 --> TAX
     S1 --> GUILD
     TSV --> S2
-    S2 --> PRION'
+    TSV --> S3
+    S2 --> PRION
+    S3 --> PAPA_OUT'
 }
 
 #' Check if internet is available by testing mermaid.ink
