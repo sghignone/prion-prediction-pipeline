@@ -1,3 +1,8 @@
+<!-- badges: start -->
+[![R](https://github.com/sghignone/prion-prediction-pipeline/actions/workflows/r.yml/badge.svg)](https://github.com/sghignone/prion-prediction-pipeline/actions/workflows/r.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+<!-- badges: end -->
+
 # Prion Prediction Pipeline
 
 A comprehensive R-based pipeline for identifying prion-like domains in fungal proteomes. This pipeline analyzes UniProt fungi databases to predict proteins with prion-forming propensity using multiple complementary algorithms.
