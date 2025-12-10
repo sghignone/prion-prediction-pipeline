@@ -1,4 +1,6 @@
 <!-- badges: start -->
+[![test-coverage](https://github.com/sghignone/prion-prediction-pipeline/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/sghignone/prion-prediction-pipeline/actions/workflows/test-coverage.yaml)
+[![Codecov test coverage](https://codecov.io/gh/sghignone/prion-prediction-pipeline/graph/badge.svg)](https://app.codecov.io/gh/sghignone/prion-prediction-pipeline)
 <!-- badges: end -->
 
 # Prion Prediction Pipeline
