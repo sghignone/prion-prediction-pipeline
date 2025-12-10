@@ -8,7 +8,7 @@
 * Use **PrionScan**, an online database and accompanying software based on Espinosa Angarica's work, which applies probabilistic models (HMMs) trained on experimentally validated prion domains to scan full proteomes for candidate prion domains with Q/N enrichment and disorder characteristics (score threshold recommended by original papers ~0.2 for candidate confidence). 
 [in short: Use PrionScan, which applies probabilistic models of Q/N-rich prion domains for high-confidence candidates.]  
 
-    Reference papers:
+    Reference papers:  
         - "PrionScan: an online database of predicted prion domains in complete proteomes"  
         - "Discovering putative prion sequences in complete proteomes using probabilistic representations of Q/N-rich domains"
 
