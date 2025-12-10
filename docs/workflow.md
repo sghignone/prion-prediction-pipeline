@@ -49,12 +49,50 @@
 * Comparative statistical testing as before, with detailed breakdown by prediction method, to robustly demonstrate expansion or enrichment patterns in AMF.
 
 ## Summary Table of Prediction Tools
-| Tool      | Purpose                       | Key Features                                                         | Threshold Example                 |
-| --------- | ----------------------------- | -------------------------------------------------------------------- | --------------------------------- |
-| PrionScan | Probabilistic Q/N-rich PrLDs  | HMM-based on experimentally validated prions                         | Score > 0.2 (default)             |
-| PAPA      | Aggregation-prone PrLDs       | Composition and aggregation propensity-based prediction              | Aggregation score > 0.05          |
-| PLAAC     | Log-likelihood Q/N PrLDs      | Statistical Q/N enrichment relative to background proteome           | Score > 20 (high-confidence hits) |
-| fLPS      | Low-complexity Q/N regions    | Identifies simple sequence repeats and Q/N-rich low complexity       | Default settings                  |
-| WALTZ     | Amyloid motif predictor       | Detects short amyloidogenic peptides independently of Q/N enrichment | Score ~0.5-0.6                    |
-| ArchCandy | Amyloid propensity predictor  | Complementary sequence-based amyloid prediction                      | Default parameters                |
-| IUPred2A  | Intrinsic disorder prediction | Validates prion candidates by disorder context                       | Default threshold (IUPred > 0.5)  |
+| Tool      | Purpose                       | Key Features                                                         | Threshold Example                 | Completed |
+| --------- | ----------------------------- | -------------------------------------------------------------------- | --------------------------------- | --------- |
+| PrionScan | Probabilistic Q/N-rich PrLDs  | HMM-based on experimentally validated prions                         | Score > 0.2 (default)             | ✅        |
+| PAPA      | Aggregation-prone PrLDs       | Composition and aggregation propensity-based prediction              | Aggregation score > 0.05          |           |
+| PLAAC     | Log-likelihood Q/N PrLDs      | Statistical Q/N enrichment relative to background proteome           | Score > 20 (high-confidence hits) |           |
+| fLPS      | Low-complexity Q/N regions    | Identifies simple sequence repeats and Q/N-rich low complexity       | Default settings                  |           |
+| WALTZ     | Amyloid motif predictor       | Detects short amyloidogenic peptides independently of Q/N enrichment | Score ~0.5-0.6                    |           |
+| ArchCandy | Amyloid propensity predictor  | Complementary sequence-based amyloid prediction                      | Default parameters                |           |
+| IUPred2A  | Intrinsic disorder prediction | Validates prion candidates by disorder context                       | Default threshold (IUPred > 0.5)  |           |
+
+---
+
+## Pipeline Workflow Diagram
+
+```mermaid
+flowchart TD
+    subgraph inputs["Raw Inputs"]
+        DAT[("UniProt .dat files<br/>data/raw/")]
+    end
+
+    subgraph step1["Step 1: Data Pre-Analysis"]
+        S1[data_preanalysis.R]
+    end
+
+    subgraph cache["Cache Layer"]
+        TSV[("Tabular Cache<br/>data/cache/")]
+        FGDB[("FunGuild DB<br/>data/cache/")]
+    end
+
+    subgraph step2["Step 2: Prion Prediction"]
+        S2[PrionScan.R]
+    end
+
+    subgraph outputs["Processed Outputs"]
+        TAX[("Taxonomy TSV<br/>data/processed/")]
+        GUILD[("Guild Mapping<br/>data/processed/")]
+        PRION[("Prion Predictions<br/>data/processed/")]
+    end
+
+    DAT --> S1
+    S1 --> TSV
+    S1 --> FGDB
+    S1 --> TAX
+    S1 --> GUILD
+    TSV --> S2
+    S2 --> PRION
+```

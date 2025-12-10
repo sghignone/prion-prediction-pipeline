@@ -2,6 +2,17 @@
 
 All notable changes to the Pipeline Orchestrator are documented in this file.
 
+## [v1.2] - 2025
+
+### Script Rename
+
+- **RENAMED**: `prion_parser` step renamed to `PrionScan`
+  - Registry entry updated: `PrionScan` (was `prion_parser`)
+  - Script path: `R/PrionScan.R` (was `R/prion_parser.R`)
+  - Updated Mermaid diagram references
+
+---
+
 ## [v1.1] - 2025
 
 ### Enhanced Diagram Export
@@ -39,10 +50,10 @@ Initial release of the pipeline orchestrator.
 - Timestamped run logs saved to `reports/pipeline_run_*.log`
 - Console output mirrors log file
 
-### Pipeline Steps (v1.0)
+### Pipeline Steps
 
 1. **data_preanalysis**: Convert .dat to TSV, extract taxonomy, map FunGuild
-2. **prion_parser**: Predict prion domains from cached sequences
+2. **PrionScan**: Predict prion domains from cached sequences
 
 ### Embedded Workflow Diagram
 
@@ -52,6 +63,6 @@ flowchart TD
     S1 --> TSV[("Tabular Cache")]
     S1 --> TAX[("Taxonomy TSV")]
     S1 --> GUILD[("Guild Mapping")]
-    TSV --> S2[prion_parser.R]
+    TSV --> S2[PrionScan.R]
     S2 --> PRION[("Prion Predictions")]
 ```

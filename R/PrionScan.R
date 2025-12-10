@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
 
 ################################################################################
-# Prion Domain Prediction Script (v1.0.1)
+# PrionScan - Prion Domain Prediction (v1.0.2)
 ################################################################################
 # Predicts prion domains in protein sequences using sliding window analysis
 #
-# See docs/changelog_prion_parser.md for version history.
+# See docs/changelog_PrionScan.md for version history.
 #
 # This script:
 # 1. Reads tabular cache from data_preanalysis.R (or raw .dat files)
@@ -588,16 +588,16 @@ main <- function() {
 
   opt_parser <- OptionParser(
     option_list = option_list,
-    description = paste("\n=== Prion Domain Prediction v1.0 ===\n",
+    description = paste("\n=== PrionScan v1.0.2 ===\n",
                         "Predicts prion domains using sliding window analysis.\n",
                         "Uses cached tabular files from data_preanalysis.R for speed."),
     epilogue = paste("\nReferences:",
                      "  Angarica et al. (2013) BMC Genomics",
                      "  Alberti et al. (2009) Cell 137(1):146-158",
                      "\nExamples:",
-                     "  Rscript R/prion_parser.R --db sprot",
-                     "  Rscript R/prion_parser.R -s data/raw/uniprot_trembl_fungi.dat.gz",
-                     "  Rscript R/prion_parser.R --db sprot -o results.dat -t results.tsv",
+                     "  Rscript R/PrionScan.R --db sprot",
+                     "  Rscript R/PrionScan.R -s data/raw/uniprot_trembl_fungi.dat.gz",
+                     "  Rscript R/PrionScan.R --db sprot -o results.dat -t results.tsv",
                      sep = "\n")
   )
 
@@ -606,9 +606,9 @@ main <- function() {
 
   cat("\n")
   cat("================================================================================\n")
-  cat("PRION DOMAIN PREDICTION PIPELINE (v1.0)\n")
+  cat("PRIONSCAN - Prion Domain Prediction (v1.0.2)\n")
   cat("================================================================================\n")
-  cat("See docs/changelog_prion_parser.md for version history.\n")
+  cat("See docs/changelog_PrionScan.md for version history.\n")
   cat("================================================================================\n")
 
   # Determine input source

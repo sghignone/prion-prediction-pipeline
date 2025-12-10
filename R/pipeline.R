@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
 # =============================================================================
 # Pipeline Orchestrator for Prion Prediction Pipeline
-# Version: 1.1
+# Version: 1.2
 # =============================================================================
 #
 # Usage:
 #   Rscript R/pipeline.R --db sprot              # Run full pipeline
-#   Rscript R/pipeline.R --db sprot --step prion_parser  # Run single step
+#   Rscript R/pipeline.R --db sprot --step PrionScan  # Run single step
 #   Rscript R/pipeline.R --list                  # Show available steps
 #   Rscript R/pipeline.R --check --db sprot      # Validate without running
 #   Rscript R/pipeline.R --diagram               # Export diagram to docs/
@@ -32,7 +32,7 @@
 #     end
 #
 #     subgraph step2["Step 2: Prion Prediction"]
-#         S2[prion_parser.R]
+#         S2[PrionScan.R]
 #     end
 #
 #     subgraph outputs["Processed Outputs"]
@@ -60,7 +60,7 @@ suppressPackageStartupMessages({
 # CONFIGURATION
 # =============================================================================
 
-SCRIPT_VERSION <- "1.1"
+SCRIPT_VERSION <- "1.2"
 
 # Directory structure
 DATA_RAW_DIR      <- "data/raw"
@@ -103,8 +103,8 @@ PIPELINE_STEPS <- list(
     args = function(db) c("--db", db)
   ),
 
-  prion_parser = list(
-    script = "R/prion_parser.R",
+  PrionScan = list(
+    script = "R/PrionScan.R",
     description = "Predict prion domains from cached sequences",
     inputs = list(
       cache = "{DATA_CACHE_DIR}/{db_prefix}_fungi_tabular_*.tsv"
@@ -119,7 +119,7 @@ PIPELINE_STEPS <- list(
 )
 
 # Step execution order
-STEP_ORDER <- c("data_preanalysis", "prion_parser")
+STEP_ORDER <- c("data_preanalysis", "PrionScan")
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -377,7 +377,7 @@ get_diagram_code <- function() {
     end
 
     subgraph step2["Step 2: Prion Prediction"]
-        S2[prion_parser.R]
+        S2[PrionScan.R]
     end
 
     subgraph outputs["Processed Outputs"]
@@ -527,7 +527,7 @@ show_help <- function() {
   cat("\n")
   cat("Examples:\n")
   cat("  Rscript R/pipeline.R --db sprot              # Run full pipeline\n")
-  cat("  Rscript R/pipeline.R --db sprot --step prion_parser  # Single step\n")
+  cat("  Rscript R/pipeline.R --db sprot --step PrionScan  # Single step\n")
   cat("  Rscript R/pipeline.R --list --db sprot       # Show status\n")
   cat("  Rscript R/pipeline.R --check --db sprot      # Dry run\n")
   cat("  Rscript R/pipeline.R --diagram               # Export diagram to docs/\n")

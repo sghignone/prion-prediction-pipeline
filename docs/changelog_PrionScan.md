@@ -1,6 +1,15 @@
-# Changelog - Prion Domain Prediction
+# Changelog - PrionScan
 
-All notable changes to the Prion Domain Prediction script are documented in this file.
+All notable changes to PrionScan (Prion Domain Prediction) are documented in this file.
+
+## [v1.0.2] - 2025
+
+### Renamed
+- **RENAMED**: Script renamed from `prion_parser.R` to `PrionScan.R`
+  - Aligns with workflow documentation naming convention
+  - Updated all internal references and banners
+
+---
 
 ## [v1.0.1] - 2025
 
