@@ -1,6 +1,5 @@
 <!-- badges: start -->
-  [![Codecov test coverage](https://codecov.io/gh/sghignone/prion-prediction-pipeline/graph/badge.svg)](https://app.codecov.io/gh/sghignone/prion-prediction-pipeline)
-  <!-- badges: end -->
+<!-- badges: end -->
 
 # Prion Prediction Pipeline
 
