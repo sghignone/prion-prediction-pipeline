@@ -1,3 +1,7 @@
+<!-- badges: start -->
+  [![Codecov test coverage](https://codecov.io/gh/sghignone/prion-prediction-pipeline/graph/badge.svg)](https://app.codecov.io/gh/sghignone/prion-prediction-pipeline)
+  <!-- badges: end -->
+
 # Prion Prediction Pipeline
 
 A comprehensive R-based pipeline for identifying prion-like domains in fungal proteomes. This pipeline analyzes UniProt fungi databases to predict proteins with prion-forming propensity using multiple complementary algorithms.

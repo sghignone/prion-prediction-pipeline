@@ -67,3 +67,6 @@ reports/*.tsv
 
 # Docs files
 docs/pipeline_diagram*
+
+# Claude AI files
+CLAUDE.md
