@@ -509,8 +509,6 @@ write_outputs <- function(results, output_file, tabular_file, db_name) {
       tabular_rows[[idx]] <- data.frame(
         Protein_ID = pred$seq_id,
         Organism = pred$organism,
-        Taxonomy = pred$taxonomy,
-        NCBI_TaxID = ifelse(is.null(pred$taxid) || is.na(pred$taxid), "", pred$taxid),
         Window_Position = pred$window,
         Score = pred$score,
         Prion_Domain = pred$domain,
@@ -530,8 +528,6 @@ write_outputs <- function(results, output_file, tabular_file, db_name) {
       data.frame(
         Protein_ID = character(),
         Organism = character(),
-        Taxonomy = character(),
-        NCBI_TaxID = character(),
         Window_Position = integer(),
         Score = numeric(),
         Prion_Domain = character()

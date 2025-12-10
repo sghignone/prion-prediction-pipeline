@@ -2,6 +2,17 @@
 
 All notable changes to PAPA (Prion Aggregation Prediction Algorithm) are documented in this file.
 
+## [v1.1] - 2025
+
+### Output Simplification
+- **REMOVED**: Taxonomy and NCBI_TaxID columns from prediction output
+  - These fields are redundant with tabular cache
+  - Join with `*_fungi_tabular_*.tsv` by Protein_ID when metadata needed
+  - Reduces output file size by ~30%
+- **Output columns**: Protein_ID, Organism, PAPA_Score, PAPA_Position, Above_Threshold
+
+---
+
 ## [v1.0] - 2025
 
 Initial pipeline-integrated version. Major refactor from standalone script.

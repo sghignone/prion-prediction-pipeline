@@ -408,8 +408,6 @@ write_papa_results <- function(results, output_file, threshold) {
   df <- data.frame(
     Protein_ID = sapply(results, function(x) x$protein_id),
     Organism = sapply(results, function(x) x$organism),
-    Taxonomy = sapply(results, function(x) x$taxonomy),
-    NCBI_TaxID = sapply(results, function(x) x$taxid),
     PAPA_Score = sapply(results, function(x) round(x$score, 6)),
     PAPA_Position = sapply(results, function(x) x$position),
     Above_Threshold = sapply(results, function(x) x$above_threshold),

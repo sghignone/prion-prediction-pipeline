@@ -118,11 +118,17 @@ Rscript R/pipeline.R --diagram
 |------|-------------|
 | `*_prion_predictions_*.tsv` | Prion domain predictions (Score >= 50) |
 
+Columns: `Protein_ID, Organism, Window_Position, Score, Prion_Domain`
+
 ### From PAPA.R
 
 | File | Description |
 |------|-------------|
 | `*_papa_predictions_*.tsv` | PAPA scores for all proteins |
+
+Columns: `Protein_ID, Organism, PAPA_Score, PAPA_Position, Above_Threshold`
+
+> **Note**: Taxonomy and NCBI_TaxID are stored in the tabular cache. Join by `Protein_ID` when needed.
 
 ## Workflow Diagram
 

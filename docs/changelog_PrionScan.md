@@ -2,6 +2,17 @@
 
 All notable changes to PrionScan (Prion Domain Prediction) are documented in this file.
 
+## [v1.0.3] - 2025
+
+### Output Simplification
+- **REMOVED**: Taxonomy and NCBI_TaxID columns from prediction output
+  - These fields are redundant with tabular cache
+  - Join with `*_fungi_tabular_*.tsv` by Protein_ID when metadata needed
+  - Reduces output file size by ~30%
+- **Output columns**: Protein_ID, Organism, Window_Position, Score, Prion_Domain
+
+---
+
 ## [v1.0.2] - 2025
 
 ### Renamed
