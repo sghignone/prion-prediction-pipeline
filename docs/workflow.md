@@ -1,22 +1,22 @@
 ## Step 1: Data Collection
-- Download fungal proteomes from UniProt Trembl fungi dataset (uniprot_trembl_fungi.dat.gz) to have a broad and high-quality starting point.
-- (optional) Extract proteomes of target species from metadata:
+* Download fungal proteomes from UniProt Trembl fungi dataset (uniprot_trembl_fungi.dat.gz) to have a broad and high-quality starting point.
+* (optional) Extract proteomes of target species from metadata:
     AMF species (Rhizophagus, Gigaspora, Diversispora, etc.)
     Other guild representatives (ECM fungi, pathogens, saprotrophs) using taxonomic and ecological metadata.
 
 ## Step 2: Identification of Prion-Like Domains (Q/N-rich)
-- Use **PrionScan**, an online database and accompanying software based on Espinosa Angarica's work, which applies probabilistic models (HMMs) trained on experimentally validated prion domains to scan full proteomes for candidate prion domains with Q/N enrichment and disorder characteristics (score threshold recommended by original papers ~0.2 for candidate confidence). 
+* Use **PrionScan**, an online database and accompanying software based on Espinosa Angarica's work, which applies probabilistic models (HMMs) trained on experimentally validated prion domains to scan full proteomes for candidate prion domains with Q/N enrichment and disorder characteristics (score threshold recommended by original papers ~0.2 for candidate confidence). 
 [in short: Use PrionScan, which applies probabilistic models of Q/N-rich prion domains for high-confidence candidates.]  
 
-Reference papers:
+    Reference papers:
         - "PrionScan: an online database of predicted prion domains in complete proteomes"
         - "Discovering putative prion sequences in complete proteomes using probabilistic representations of Q/N-rich domains"
 
-- Include **PAPA** (Prion Aggregation Prediction Algorithm) to predict prion-like domains based on amino acid composition and aggregation propensity from Toombs et al. 2012. PAPA outperforms traditional predictors in some cases by capturing sequence features related to synthetic and natural prions. Default thresholds from the original work (aggregation scores above 0.05) guide candidate selection.
+* Include **PAPA** (Prion Aggregation Prediction Algorithm) to predict prion-like domains based on amino acid composition and aggregation propensity from Toombs et al. 2012. PAPA outperforms traditional predictors in some cases by capturing sequence features related to synthetic and natural prions. Default thresholds from the original work (aggregation scores above 0.05) guide candidate selection.
 
-- Alternatively or complementarily, run **PLAAC** (Prion-Like Amino Acid Composition) to identify prion-like domains using a log-likelihood scoring function for Q/N-rich sequences relative to a background proteome. PLAAC offers a score cutoff of 20 for high-confidence hits, but tuning may be needed. [in short: PLAAC complementary scans for prion-like domains based on log-likelihood of Q/N composition.]
+* Alternatively or complementarily, run **PLAAC** (Prion-Like Amino Acid Composition) to identify prion-like domains using a log-likelihood scoring function for Q/N-rich sequences relative to a background proteome. PLAAC offers a score cutoff of 20 for high-confidence hits, but tuning may be needed. [in short: PLAAC complementary scans for prion-like domains based on log-likelihood of Q/N composition.]
 
-- Supplement with **fLPS** to identify low-complexity Q/N enriched regions in proteins, using default thresholds but focusing on those overlapping predicted disordered regions. [in short: Use fLPS to annotate low-complexity Q/N-rich regions overlapping with predicted disordered sections.]
+* Supplement with **fLPS** to identify low-complexity Q/N enriched regions in proteins, using default thresholds but focusing on those overlapping predicted disordered regions. [in short: Use fLPS to annotate low-complexity Q/N-rich regions overlapping with predicted disordered sections.]
 
 ## Step 3: Identification of Non-Q/N Prion-Like or Amyloid-Forming Domains
 - Run **WALTZ** (a sequence-based amyloid motif predictor) on the proteomes or selected prion-like candidates to capture short amyloidogenic peptides that may not be Q/N-rich but still form amyloids/prions. Thresholds around 0.5-0.6 stringency usually balance sensitivity and specificity.
