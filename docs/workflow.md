@@ -9,7 +9,7 @@
 [in short: Use PrionScan, which applies probabilistic models of Q/N-rich prion domains for high-confidence candidates.]  
     Reference papers:  
         - "PrionScan: an online database of predicted prion domains in complete proteomes"  
-        - "Discovering putative prion sequences in complete proteomes using probabilistic representations of Q/N-rich domains"    * 
+        - "Discovering putative prion sequences in complete proteomes using probabilistic representations of Q/N-rich domains"
 
 * Include **PAPA** (Prion Aggregation Prediction Algorithm) to predict prion-like domains based on amino acid composition and aggregation propensity from Toombs et al. 2012. PAPA outperforms traditional predictors in some cases by capturing sequence features related to synthetic and natural prions. Default thresholds from the original work (aggregation scores above 0.05) guide candidate selection.
 * Alternatively or complementarily, run **PLAAC** (Prion-Like Amino Acid Composition) to identify prion-like domains using a log-likelihood scoring function for Q/N-rich sequences relative to a background proteome. PLAAC offers a score cutoff of 20 for high-confidence hits, but tuning may be needed. [in short: PLAAC complementary scans for prion-like domains based on log-likelihood of Q/N composition.]
