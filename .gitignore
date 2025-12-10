@@ -66,5 +66,4 @@ reports/*.pdf
 reports/*.tsv
 
 # Docs files
-docs/pipeline_diagram.md
-docs/pipeline_diagram.png
+docs/pipeline_diagram*
