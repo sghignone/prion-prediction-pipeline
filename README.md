@@ -20,7 +20,7 @@ The pipeline processes UniProt SwissProt/TrEMBL fungi databases through a series
 ### R Packages
 
 ```r
-install.packages(c("tidyverse", "FUNGuildR", "patchwork", "optparse", "parallel", "readr", "stringr"))
+install.packages(c("tidyverse", "FUNGuildR", "patchwork", "optparse", "parallel", "readr", "stringr", "ggVennDiagram"))
 ```
 
 ### Optional (for diagram generation)
@@ -41,7 +41,8 @@ prion-prediction-pipeline/
 │   ├── pipeline.R              # Orchestrator (runs all steps)
 │   ├── data_preanalysis.R      # Step 1: Data conversion & FunGuild
 │   ├── PrionScan.R             # Step 2: Prion domain prediction
-│   └── PAPA.R                  # Step 3: Aggregation propensity
+│   ├── PAPA.R                  # Step 3: Aggregation propensity
+│   └── venn_predictions.R      # Compare PrionScan vs PAPA results
 ├── data/
 │   ├── raw/                    # Input: UniProt .dat files
 │   ├── cache/                  # Intermediate: Tabular cache, FunGuild DB
@@ -87,6 +88,9 @@ Rscript R/PrionScan.R --db sprot
 
 # Step 3: PAPA only (requires Step 1 cache)
 Rscript R/PAPA.R --db sprot
+
+# Compare predictions (requires PrionScan + PAPA outputs)
+Rscript R/venn_predictions.R --db sprot
 ```
 
 ## Pipeline Orchestrator
@@ -134,6 +138,12 @@ Columns: `Protein_ID, Organism, Window_Position, Score, Prion_Domain`
 
 Columns: `Protein_ID, Organism, PAPA_Score, PAPA_Position, Above_Threshold`
 
+### From venn_predictions.R
+
+| File | Description |
+|------|-------------|
+| `*_venn_predictions_*.png` | Venn diagram comparing PrionScan vs PAPA predictions |
+
 > **Note**: Taxonomy and NCBI_TaxID are stored in the tabular cache. Join by `Protein_ID` when needed.
 
 ## Workflow Diagram
@@ -149,6 +159,9 @@ flowchart TD
     TSV --> S3[PAPA.R]
     S2 --> PRION[("PrionScan Predictions")]
     S3 --> PAPA_OUT[("PAPA Predictions")]
+    PRION --> VENN[venn_predictions.R]
+    PAPA_OUT --> VENN
+    VENN --> VENN_OUT[("Venn Diagram")]
 ```
 
 ## Algorithm Details

@@ -101,4 +101,7 @@ flowchart TD
     TSV --> S3
     S2 --> PRION
     S3 --> PAPA_OUT
+    PRION --> VENN[venn_predictions.R]
+    PAPA_OUT --> VENN
+    VENN --> VENN_OUT[("Venn Diagram<br/>reports/")]
 ```
