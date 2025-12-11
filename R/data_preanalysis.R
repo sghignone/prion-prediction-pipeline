@@ -604,13 +604,15 @@ extract_taxonomy_from_tabular <- function(tabular_file) {
 
   start_time <- Sys.time()
 
-  # Fast TSV read with readr
+  # Fast TSV read with readr (include NCBI_TaxID and Sequence for FASTA export)
   taxonomy_raw <- read_tsv(
     tabular_file,
     col_types = cols(
       Protein_ID = col_character(),
       Organism = col_character(),
-      Full_Taxonomy = col_character()
+      Full_Taxonomy = col_character(),
+      NCBI_TaxID = col_character(),
+      Sequence = col_character()
     ),
     show_col_types = FALSE,
     progress = TRUE
@@ -631,6 +633,7 @@ extract_taxonomy_from_tabular <- function(tabular_file) {
   }
 
   taxonomy_file <- file.path(DATA_PROCESSED_DIR, paste0(db_name, "_fungi_taxonomy_", timestamp, ".tsv"))
+  fasta_file <- file.path(DATA_PROCESSED_DIR, paste0(db_name, "_fungi_sequences_", timestamp, ".fasta"))
 
   cat(" ↳ Parsing organism names (vectorized)...\n")
   parse_start <- Sys.time()
@@ -666,6 +669,39 @@ extract_taxonomy_from_tabular <- function(tabular_file) {
   write_tsv(parsed, taxonomy_file)
   cat(sprintf(" ↳ Saved to: %s\n", basename(taxonomy_file)))
 
+  # Export FASTA file
+  cat(" ↳ Writing FASTA sequences...\n")
+  fasta_start <- Sys.time()
+
+  # Filter rows with valid sequences
+  seq_data <- taxonomy_raw %>%
+    filter(!is.na(Sequence), nchar(Sequence) > 0)
+
+  # Build FASTA content
+  # Header format: >PROTEIN_ID|NCBI_TaxID|Organism name
+  fasta_lines <- character(nrow(seq_data) * 2)
+  for (i in seq_len(nrow(seq_data))) {
+    # Header line
+    fasta_lines[(i - 1) * 2 + 1] <- sprintf(
+      ">%s|%s|%s",
+      seq_data$Protein_ID[i],
+      ifelse(is.na(seq_data$NCBI_TaxID[i]), "", seq_data$NCBI_TaxID[i]),
+      ifelse(is.na(seq_data$Organism[i]), "", seq_data$Organism[i])
+    )
+    # Sequence line
+    fasta_lines[(i - 1) * 2 + 2] <- seq_data$Sequence[i]
+  }
+
+  writeLines(fasta_lines, fasta_file)
+  fasta_time <- difftime(Sys.time(), fasta_start, units = "secs")
+
+  cat(sprintf(
+    " ↳ FASTA saved: %s (%s sequences, %.1f sec)\n",
+    basename(fasta_file),
+    format(nrow(seq_data), big.mark = ","),
+    as.numeric(fasta_time)
+  ))
+
   # Summary stats
   n_unique_genera <- n_distinct(parsed$Genus, na.rm = TRUE)
   n_unique_species <- n_distinct(parsed$Species, na.rm = TRUE)
@@ -675,7 +711,8 @@ extract_taxonomy_from_tabular <- function(tabular_file) {
   return(list(
     data = parsed,
     db_name = db_name,
-    taxonomy_file = taxonomy_file
+    taxonomy_file = taxonomy_file,
+    fasta_file = fasta_file
   ))
 }
 
@@ -899,6 +936,7 @@ generate_diagnostics <- function(taxonomy_result, guild_results) {
   cat("--- OUTPUT FILES ---\n")
   cat(sprintf("FunGuild DB: %s\n", file.path(DATA_CACHE_DIR, paste0("funguild_db_", timestamp, ".rds"))))
   cat(sprintf("Taxonomy: %s\n", taxonomy_result$taxonomy_file))
+  cat(sprintf("FASTA sequences: %s\n", taxonomy_result$fasta_file))
   cat(sprintf("Guild mapping: %s\n", guild_results$guild_mapping_file))
   cat(sprintf("Unmatched genera: %s\n", unmatched_log_file))
   cat(sprintf("Report: %s\n", report_file))
@@ -1143,6 +1181,7 @@ main <- function() {
   cat(sprintf("  FunGuild database:   %s\n", funguild_db_file))
   cat(sprintf("  Tabular conversion:  %s\n", uniprot_result$tabular_file))
   cat(sprintf("  Taxonomy table:      %s\n", taxonomy_result$taxonomy_file))
+  cat(sprintf("  FASTA sequences:     %s\n", taxonomy_result$fasta_file))
   cat(sprintf("  Guild mapping:       %s\n", guild_results$guild_mapping_file))
   cat(sprintf("  Unmatched genera:    %s\n", summary_stats$unmatched_log_file))
   cat(sprintf("  Diagnostic report:   %s\n", summary_stats$report_file))

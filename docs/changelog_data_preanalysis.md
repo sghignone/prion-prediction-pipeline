@@ -2,6 +2,17 @@
 
 All notable changes to the FunGuild Pre-Analysis Pipeline are documented in this file.
 
+## [v1.0.3] - 2025
+
+### Features
+- **NEW**: FASTA sequence export in Step 3
+  - Generates `{db}_fungi_sequences_TIMESTAMP.fasta` in `data/processed/`
+  - Header format: `>PROTEIN_ID|NCBI_TaxID|Organism name`
+  - Uses existing tabular cache (no re-parsing of .dat files)
+  - Ready for downstream tools (PLAAC, external predictors)
+
+---
+
 ## [v1.0.2] - 2025
 
 ### Features

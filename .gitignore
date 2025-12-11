@@ -53,7 +53,8 @@ po/*~
 rsconnect/
 
 # Deprecated scripts (replaced by new versions)
-R/prion_parser_v13.0.R
+archive/prion_parser_v13.0.R
+arcive/data_preanalysis_fasta_patch_1.R
 
 # Large data files
 data/raw/*.dat

@@ -1,0 +1,301 @@
+################################################################################
+# MODIFICATIONS TO funguild_preanalysis.R for FASTA Output
+################################################################################
+# 
+# This file shows the changes needed to add FASTA sequence output
+# to the taxonomy extraction step (Step 3) of funguild_preanalysis.R
+#
+# The FASTA file will be generated alongside the taxonomy TSV file,
+# ready for use with plaac_launcher.R and other prion prediction tools.
+#
+################################################################################
+
+# ============================================================================
+# CHANGE 1: Modify parse_entry_chunk() to also capture sequences
+# ============================================================================
+# 
+# In the parse_entry_chunk() function, add sequence capture to the parsing loop.
+# The modified function returns BOTH taxonomy data AND sequences.
+
+#' Parse a chunk of entries from the file (MODIFIED for FASTA output)
+#' @param dat_file Path to UniProt file
+#' @param start_entry Index of first entry to process (1-based)
+#' @param end_entry Index of last entry to process (1-based)
+#' @param include_sequences Logical - whether to capture sequences
+#' @return List with $taxonomy (data frame) and $sequences (character vector)
+parse_entry_chunk_with_seq <- function(dat_file, start_entry, end_entry, 
+                                       include_sequences = TRUE) {
+  # Open file connection
+  if (grepl("\\.gz$", dat_file, ignore.case = TRUE)) {
+    con <- gzfile(dat_file, "rt")
+  } else {
+    con <- file(dat_file, "rt")
+  }
+  
+  # Initialize results
+  chunk_data <- data.frame(
+    Protein_ID = character(),
+    Organism = character(),
+    Genus = character(),
+    Species = character(),
+    Full_Taxonomy = character(),
+    stringsAsFactors = FALSE
+  )
+  
+  # NEW: Initialize sequence storage
+  sequences <- character()
+  
+  # Track current entry
+  current_entry <- 0L
+  seq_id <- NULL
+  organism <- ""
+  sci_name <- ""
+  taxonomy_lineage <- ""
+  sequence <- ""  # NEW: track sequence
+  
+  # Stream through file
+  while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
+    if (grepl("^ID\\s+(\\w+)\\s+", line)) {
+      seq_id <- str_match(line, "^ID\\s+(\\w+)\\s+")[2]
+      
+    } else if (grepl("^OS\\s+(.*)", line)) {
+      match <- str_match(line, "^OS\\s+(.*)")
+      organism <- ifelse(organism == "", match[2], paste(organism, match[2]))
+      sci_name <- os_name_cleaning(organism)
+      
+    } else if (grepl("^OC\\s+(.*)", line)) {
+      match <- str_match(line, "^OC\\s+(.*)")
+      taxonomy_part <- gsub(";$", "", match[2])
+      taxonomy_lineage <- ifelse(
+        taxonomy_lineage == "",
+        taxonomy_part,
+        paste(taxonomy_lineage, taxonomy_part, sep = "; ")
+      )
+      
+    } else if (grepl("^\\s{5}[A-Z]", line)) {
+      # NEW: Capture sequence lines (start with 5 spaces then amino acids)
+      if (include_sequences) {
+        seq_content <- gsub("\\s", "", line)
+        sequence <- paste0(sequence, seq_content)
+      }
+      
+    } else if (grepl("^//", line)) {
+      # End of entry
+      current_entry <- current_entry + 1L
+      
+      # Process if within this chunk's range
+      if (current_entry >= start_entry && current_entry <= end_entry) {
+        if (!is.null(seq_id) && sci_name != "") {
+          # Parse genus and species
+          parsed <- parse_scientific_name(sci_name)
+          
+          chunk_data <- rbind(
+            chunk_data,
+            data.frame(
+              Protein_ID = seq_id,
+              Organism = sci_name,
+              Genus = parsed$genus,
+              Species = parsed$species,
+              Full_Taxonomy = taxonomy_lineage,
+              stringsAsFactors = FALSE
+            )
+          )
+          
+          # NEW: Store sequence in FASTA format
+          if (include_sequences && nchar(sequence) > 0) {
+            fasta_header <- sprintf(">%s %s", seq_id, sci_name)
+            # Wrap sequence at 60 characters per line
+            seq_wrapped <- paste(
+              substring(sequence, 
+                        seq(1, nchar(sequence), 60),
+                        seq(60, nchar(sequence) + 59, 60)),
+              collapse = "\n"
+            )
+            sequences <- c(sequences, fasta_header, seq_wrapped)
+          }
+        }
+      }
+      
+      # Stop if past this chunk's range
+      if (current_entry > end_entry) {
+        break
+      }
+      
+      # Reset for next entry
+      seq_id <- NULL
+      organism <- ""
+      sci_name <- ""
+      taxonomy_lineage <- ""
+      sequence <- ""  # NEW: reset sequence
+    }
+  }
+  
+  close(con)
+  
+  # Return both taxonomy and sequences
+  return(list(
+    taxonomy = chunk_data,
+    sequences = sequences
+  ))
+}
+
+
+# ============================================================================
+# CHANGE 2: Modify extract_taxonomy_from_uniprot() to handle sequences
+# ============================================================================
+#
+# Update the main extraction function to:
+# 1. Call the modified parse_entry_chunk_with_seq()
+# 2. Collect sequences from all chunks
+# 3. Write FASTA file alongside taxonomy TSV
+
+extract_taxonomy_from_uniprot_v2 <- function(dat_file, output_fasta = TRUE) {
+  cat("\n=== Step 3: Extracting Taxonomy + Sequences from UniProt (Parallel) ===\n")
+  cat(sprintf("Processing: %s\n", basename(dat_file)))
+  cat(sprintf("Using %d CPU cores\n", CORES))
+  
+  # Determine database type from filename for output naming
+  db_name <- if (grepl("sprot", basename(dat_file), ignore.case = TRUE)) {
+    "sprot"
+  } else if (grepl("trembl", basename(dat_file), ignore.case = TRUE)) {
+    "trembl"
+  } else {
+    "uniprot"
+  }
+  
+  # Create output filenames based on input database
+  taxonomy_file <- file.path(DATA_DIR,
+                             paste0(db_name, "_fungi_taxonomy_", timestamp, ".tsv"))
+  fasta_file <- file.path(DATA_DIR,
+                          paste0(db_name, "_fungi_sequences_", timestamp, ".fasta"))
+  
+  # Pre-scan to count total entries
+  total_entries <- count_uniprot_entries(dat_file)
+  
+  # Calculate chunk sizes for parallel processing
+  entries_per_core <- ceiling(total_entries / CORES)
+  
+  cat(
+    sprintf(
+      " ↳ Processing %d entries in %d chunks (~%d entries per chunk)\n",
+      total_entries,
+      CORES,
+      entries_per_core
+    )
+  )
+  
+  # Create chunk ranges
+  chunk_ranges <- lapply(1:CORES, function(i) {
+    start <- (i - 1) * entries_per_core + 1
+    end <- min(i * entries_per_core, total_entries)
+    list(start = start, end = end)
+  })
+  
+  # Remove empty chunks
+  chunk_ranges <- chunk_ranges[sapply(chunk_ranges, function(x) x$start <= total_entries)]
+  
+  cat(" ↳ Starting parallel extraction...\n")
+  start_time <- Sys.time()
+  
+  # Detect OS and use appropriate parallel method
+  is_windows <- .Platform$OS.type == "windows"
+  
+  if (is_windows) {
+    cat(" ↳ Platform: Windows (using parLapply)\n")
+    
+    cl <- makeCluster(CORES)
+    clusterExport(
+      cl,
+      c("parse_entry_chunk_with_seq", "os_name_cleaning", 
+        "parse_scientific_name", "dat_file", "output_fasta"),
+      envir = environment()
+    )
+    clusterEvalQ(cl, library(stringr))
+    
+    chunk_results <- parLapply(cl, chunk_ranges, function(range) {
+      parse_entry_chunk_with_seq(dat_file, range$start, range$end, 
+                                 include_sequences = output_fasta)
+    })
+    
+    stopCluster(cl)
+    
+  } else {
+    cat(" ↳ Platform: Unix/Linux (using mclapply)\n")
+    
+    chunk_results <- mclapply(chunk_ranges, function(range) {
+      parse_entry_chunk_with_seq(dat_file, range$start, range$end,
+                                 include_sequences = output_fasta)
+    }, mc.cores = CORES)
+  }
+  
+  end_time <- Sys.time()
+  elapsed <- difftime(end_time, start_time, units = "secs")
+  cat(sprintf(" ↳ Parallel extraction completed in %.1f seconds\n", as.numeric(elapsed)))
+  
+  # Combine taxonomy data from all chunks
+  cat(" ↳ Merging taxonomy results...\n")
+  taxonomy_data <- bind_rows(lapply(chunk_results, `[[`, "taxonomy"))
+  
+  cat(sprintf(" ↳ Extracted taxonomy for %d proteins\n", nrow(taxonomy_data)))
+  
+  # Save taxonomy file
+  write_tsv(taxonomy_data, taxonomy_file)
+  cat(sprintf(" ↳ Taxonomy saved to: %s\n", taxonomy_file))
+  
+  # NEW: Combine and save sequences
+  if (output_fasta) {
+    cat(" ↳ Writing FASTA sequences...\n")
+    
+    # Combine all sequence vectors
+    all_sequences <- unlist(lapply(chunk_results, `[[`, "sequences"))
+    
+    # Write to file
+    writeLines(all_sequences, fasta_file)
+    
+    # Count sequences (number of header lines)
+    seq_count <- sum(grepl("^>", all_sequences))
+    cat(sprintf(" ↳ FASTA saved to: %s (%d sequences)\n", fasta_file, seq_count))
+  }
+  
+  return(list(
+    data = taxonomy_data,
+    db_name = db_name,
+    taxonomy_file = taxonomy_file,
+    fasta_file = if (output_fasta) fasta_file else NULL
+  ))
+}
+
+
+# ============================================================================
+# CHANGE 3: Update Step 5 diagnostics to report FASTA file
+# ============================================================================
+#
+# In generate_diagnostics(), add the FASTA file to the output files list:
+
+# In the report section, add:
+#   cat(sprintf("  FASTA sequences: %s\n", taxonomy_result$fasta_file))
+
+# In the final console output, add:
+#   cat(sprintf("  FASTA sequences:     %s\n", taxonomy_result$fasta_file))
+
+
+# ============================================================================
+# USAGE NOTES
+# ============================================================================
+#
+# After applying these changes, running funguild_preanalysis.R will:
+#
+# 1. Generate the taxonomy TSV as before:
+#    data/sprot_fungi_taxonomy_TIMESTAMP.tsv
+#    data/trembl_fungi_taxonomy_TIMESTAMP.tsv
+#
+# 2. Generate a corresponding FASTA file:
+#    data/sprot_fungi_sequences_TIMESTAMP.fasta
+#    data/trembl_fungi_sequences_TIMESTAMP.fasta
+#
+# 3. The FASTA files are ready for use with:
+#    - plaac_launcher.R (PLAAC analysis)
+#    - Other prion prediction tools
+#    - Any downstream sequence analysis
+#
+# ============================================================================

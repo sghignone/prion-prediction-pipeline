@@ -85,6 +85,7 @@ flowchart TD
 
     subgraph outputs["Processed Outputs"]
         TAX[("Taxonomy TSV<br/>data/processed/")]
+        FASTA[("FASTA Sequences<br/>data/processed/")]
         GUILD[("Guild Mapping<br/>data/processed/")]
         PRION[("PrionScan Predictions<br/>data/processed/")]
         PAPA_OUT[("PAPA Predictions<br/>data/processed/")]
@@ -94,6 +95,7 @@ flowchart TD
     S1 --> TSV
     S1 --> FGDB
     S1 --> TAX
+    S1 --> FASTA
     S1 --> GUILD
     TSV --> S2
     TSV --> S3

@@ -115,6 +115,7 @@ Rscript R/pipeline.R --diagram
 |------|-------------|
 | `*_fungi_tabular_*.tsv` | Cached protein data (ID, Organism, Taxonomy, TaxID, Sequence) |
 | `*_fungi_taxonomy_*.tsv` | Protein taxonomy mapping |
+| `*_fungi_sequences_*.fasta` | FASTA sequences (header: `>ID\|TaxID\|Organism`) |
 | `*_genus_guild_mapping_*.tsv` | FunGuild ecological guild annotations |
 
 ### From PrionScan.R
@@ -142,6 +143,7 @@ flowchart TD
     DAT[("UniProt .dat")] --> S1[data_preanalysis.R]
     S1 --> TSV[("Tabular Cache")]
     S1 --> TAX[("Taxonomy TSV")]
+    S1 --> FASTA[("FASTA Sequences")]
     S1 --> GUILD[("Guild Mapping")]
     TSV --> S2[PrionScan.R]
     TSV --> S3[PAPA.R]
