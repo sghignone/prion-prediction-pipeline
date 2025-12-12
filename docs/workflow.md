@@ -53,7 +53,7 @@
 | --------- | ----------------------------- | -------------------------------------------------------------------- | --------------------------------- | --------- |
 | PrionScan | Probabilistic Q/N-rich PrLDs  | HMM-based on experimentally validated prions                         | Score > 0.2 (default)             | ✅        |
 | PAPA      | Aggregation-prone PrLDs       | Composition and aggregation propensity-based prediction              | Aggregation score > 0.05          | ✅        |
-| PLAAC     | Log-likelihood Q/N PrLDs      | Statistical Q/N enrichment relative to background proteome           | Score > 20 (high-confidence hits) |           |
+| PLAAC     | Log-likelihood Q/N PrLDs      | Statistical Q/N enrichment relative to background proteome           | Score > 20 (high-confidence hits) | ✅        |
 | fLPS      | Low-complexity Q/N regions    | Identifies simple sequence repeats and Q/N-rich low complexity       | Default settings                  |           |
 | WALTZ     | Amyloid motif predictor       | Detects short amyloidogenic peptides independently of Q/N enrichment | Score ~0.5-0.6                    |           |
 | ArchCandy | Amyloid propensity predictor  | Complementary sequence-based amyloid prediction                      | Default parameters                |           |
@@ -81,6 +81,7 @@ flowchart TD
     subgraph step2["Step 2: Prion Predictions"]
         S2[PrionScan.R]
         S3[PAPA.R]
+        S4[plaac.R]
     end
 
     subgraph outputs["Processed Outputs"]
@@ -89,6 +90,7 @@ flowchart TD
         GUILD[("Guild Mapping<br/>data/processed/")]
         PRION[("PrionScan Predictions<br/>data/processed/")]
         PAPA_OUT[("PAPA Predictions<br/>data/processed/")]
+        PLAAC_OUT[("PLAAC Predictions<br/>data/processed/")]
     end
 
     DAT --> S1
@@ -99,9 +101,12 @@ flowchart TD
     S1 --> GUILD
     TSV --> S2
     TSV --> S3
+    FASTA --> S4
     S2 --> PRION
     S3 --> PAPA_OUT
+    S4 --> PLAAC_OUT
     PRION --> VENN[venn_predictions.R]
     PAPA_OUT --> VENN
+    PLAAC_OUT --> VENN
     VENN --> VENN_OUT[("Venn Diagram<br/>reports/")]
 ```

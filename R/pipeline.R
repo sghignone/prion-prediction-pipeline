@@ -29,11 +29,13 @@
 #     subgraph cache["Cache Layer"]
 #         TSV[("Tabular Cache<br/>data/cache/")]
 #         FGDB[("FunGuild DB<br/>data/cache/")]
+#         FASTA[("FASTA Sequences<br/>data/processed/")]
 #     end
 #
 #     subgraph step2["Step 2: Prion Predictions"]
 #         S2[PrionScan.R]
 #         S3[PAPA.R]
+#         S4[plaac.R]
 #     end
 #
 #     subgraph outputs["Processed Outputs"]
@@ -41,17 +43,21 @@
 #         GUILD[("Guild Mapping<br/>data/processed/")]
 #         PRION[("PrionScan Predictions<br/>data/processed/")]
 #         PAPA_OUT[("PAPA Predictions<br/>data/processed/")]
+#         PLAAC_OUT[("PLAAC Predictions<br/>data/processed/")]
 #     end
 #
 #     DAT --> S1
 #     S1 --> TSV
 #     S1 --> FGDB
+#     S1 --> FASTA
 #     S1 --> TAX
 #     S1 --> GUILD
 #     TSV --> S2
 #     TSV --> S3
+#     FASTA --> S4
 #     S2 --> PRION
 #     S3 --> PAPA_OUT
+#     S4 --> PLAAC_OUT
 # ```
 #
 # =============================================================================
@@ -131,12 +137,38 @@ PIPELINE_STEPS <- list(
     ),
     depends_on = c("data_preanalysis"),
     args = function(db) c("--db", db)
+  ),
+
+  plaac = list(
+    script = "R/plaac.R",
+    description = "PLAAC prion-like amino acid composition analysis",
+    inputs = list(
+      fasta = "{DATA_PROCESSED_DIR}/{db_prefix}_fungi_sequences_*.fasta"
+    ),
+    outputs = list(
+      full = "{DATA_PROCESSED_DIR}/{db_prefix}_plaac_full_*.tsv",
+      predictions = "{DATA_PROCESSED_DIR}/{db_prefix}_plaac_predictions_*.tsv"
+    ),
+    depends_on = c("data_preanalysis"),
+    args = function(db) {
+      # Find the most recent FASTA file
+      fasta_pattern <- file.path(DATA_PROCESSED_DIR,
+        paste0(get_db_prefix(db), "_fungi_sequences_*.fasta"))
+      fasta_files <- Sys.glob(fasta_pattern)
+      if (length(fasta_files) > 0) {
+        # Get most recent by modification time
+        fasta_file <- fasta_files[order(file.mtime(fasta_files), decreasing = TRUE)[1]]
+      } else {
+        fasta_file <- fasta_pattern  # Will fail with meaningful error
+      }
+      c("-i", fasta_file, "--db", db)
+    }
   )
 
 )
 
 # Step execution order
-STEP_ORDER <- c("data_preanalysis", "PrionScan", "PAPA")
+STEP_ORDER <- c("data_preanalysis", "PrionScan", "PAPA", "plaac")
 
 # =============================================================================
 # HELPER FUNCTIONS

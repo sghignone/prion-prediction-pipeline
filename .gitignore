@@ -71,3 +71,6 @@ docs/pipeline_diagram*
 
 # Claude AI files
 CLAUDE.md
+
+# External tools (auto-downloaded)
+R/tools/
