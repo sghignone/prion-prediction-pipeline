@@ -771,20 +771,21 @@ process_plaac_output <- function(full_output, predictions_output,
 
   # Create standardized pipeline-compatible output
   # Map PLAAC columns to standard format
+  # NOTE: Force numeric conversion to prevent string comparison bugs
   standardized <- data.frame(
     Protein_ID = plaac_data$SEQid,
     Organism = extract_organism_from_seqid(plaac_data$SEQid),
-    Prion_Score = if ("COREscore" %in% names(plaac_data)) plaac_data$COREscore else NA,
-    LLR_Score = if ("LLR" %in% names(plaac_data)) plaac_data$LLR else NA,
-    PAPA_Score = if ("PAPAcombo" %in% names(plaac_data)) plaac_data$PAPAcombo else NA,
+    Prion_Score = if ("COREscore" %in% names(plaac_data)) as.numeric(plaac_data$COREscore) else NA,
+    LLR_Score = if ("LLR" %in% names(plaac_data)) as.numeric(plaac_data$LLR) else NA,
+    PAPA_Score = if ("PAPAcombo" %in% names(plaac_data)) as.numeric(plaac_data$PAPAcombo) else NA,
     Has_Prion_Domain = if ("COREscore" %in% names(plaac_data)) {
-      plaac_data$COREscore >= score_threshold
+      as.numeric(plaac_data$COREscore) >= score_threshold
     } else FALSE,
-    Domain_Start = if ("COREstart" %in% names(plaac_data)) plaac_data$COREstart else NA,
-    Domain_End = if ("COREend" %in% names(plaac_data)) plaac_data$COREend else NA,
-    Domain_Length = if ("CORElen" %in% names(plaac_data)) plaac_data$CORElen else NA,
+    Domain_Start = if ("COREstart" %in% names(plaac_data)) as.numeric(plaac_data$COREstart) else NA,
+    Domain_End = if ("COREend" %in% names(plaac_data)) as.numeric(plaac_data$COREend) else NA,
+    Domain_Length = if ("CORElen" %in% names(plaac_data)) as.numeric(plaac_data$CORElen) else NA,
     Domain_Sequence = if ("COREaa" %in% names(plaac_data)) plaac_data$COREaa else NA,
-    Protein_Length = if ("PROTlen" %in% names(plaac_data)) plaac_data$PROTlen else NA,
+    Protein_Length = if ("PROTlen" %in% names(plaac_data)) as.numeric(plaac_data$PROTlen) else NA,
     stringsAsFactors = FALSE
   )
 
